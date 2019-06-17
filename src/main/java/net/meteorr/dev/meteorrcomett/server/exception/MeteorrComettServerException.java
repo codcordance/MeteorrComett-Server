@@ -2,6 +2,11 @@ package net.meteorr.dev.meteorrcomett.server.exception;
 
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 
+/**
+ * @author RedSpri
+ *
+ *
+ */
 public class MeteorrComettServerException extends Exception {
     private MessageLevel level;
 

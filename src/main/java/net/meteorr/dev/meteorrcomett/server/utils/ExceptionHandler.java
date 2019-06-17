@@ -22,11 +22,15 @@ public class ExceptionHandler {
     }
 
     public void handle(Exception e) {
-        if (getInstance().getServerTerminal().isInitialized()) {
-            if (e instanceof MeteorrComettServerException) {
-                getInstance().getServerTerminal().print(((MeteorrComettServerException) e).getLevel(), "Exception Handled: " + e.getMessage() + " {" + e.getClass().getSimpleName() + "}", getStackTrace(e));
-            } else getInstance().getServerTerminal().print(MessageLevel.ERROR, "Exception Occured: " + e.getMessage() + " {" + e.getClass().getSimpleName() + "}", getStackTrace(e));
-        } else e.printStackTrace();
+        try {
+            if (getInstance().getServerTerminal().isInitialized()) {
+                if (e instanceof MeteorrComettServerException) {
+                    getInstance().getServerTerminal().print(((MeteorrComettServerException) e).getLevel(), "Exception Handled: " + e.getMessage() + " {" + e.getClass().getSimpleName() + "}", getStackTrace(e));
+                } else getInstance().getServerTerminal().print(MessageLevel.ERROR, "Exception Occured: " + e.getMessage() + " {" + e.getClass().getSimpleName() + "}", getStackTrace(e));
+            } else e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private String getStackTrace(Exception e) {
