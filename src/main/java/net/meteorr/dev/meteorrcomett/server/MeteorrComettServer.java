@@ -1,5 +1,7 @@
 package net.meteorr.dev.meteorrcomett.server;
 
+import net.meteorr.dev.meteorrcomett.server.utils.WaitableInlineThread;
+import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ComponentFailedToInitializeException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotInitializedException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
@@ -14,6 +16,7 @@ import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImpor
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtil;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author RedLux
@@ -55,15 +58,46 @@ public class MeteorrComettServer {
         }
     }
 
-    public void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
+    public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
         getInstance().print(MessageLevel.INFO,"Stopping...");
         getInstance().print(MessageLevel.INFO,"Intterupting non-importants threads...");
         List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
         threads.forEach(thread -> {
             if (!thread.getClass().isAnnotationPresent(MeteorrComettImportantThread.class)) {
-                getInstance().print(MessageLevel.INFO,"Intterupting  thread $YELLOW" + thread.getClass().getName() + "$RESET...");
-                thread.interrupt();
-                getInstance().print(MessageLevel.INFO,"Intterupted  thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                if (thread.getClass().isAnnotationPresent(MeteorrComettWaitableThread.class)) {
+                    long timeout = thread.getClass().getAnnotation(MeteorrComettWaitableThread.class).timeout();
+                    try {
+                        getInstance().print(MessageLevel.INFO,"Joining-- thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                        wait(timeout);
+                        if (thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + " joined and died $RESET!");
+                        else {
+                            getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
+                            thread.interrupt();
+                            getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                        }
+                    } catch (InterruptedException ignored) { }
+                } else if(thread instanceof WaitableInlineThread) {
+                    long timeout = WaitableInlineThread.class.getAnnotation(MeteorrComettWaitableThread.class).timeout();
+                    try {
+                        getInstance().print(MessageLevel.INFO,"Joining-- thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                        wait(timeout);
+                        if (thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + " joined and died $RESET!");
+                        else {
+                            getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
+                            thread.interrupt();
+                            getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                        }
+                    } catch (InterruptedException ignored) { }
+                } else {
+                    getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
+                    thread.interrupt();
+                    getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                }
+                if (thread.isAlive()) {
+                    getInstance().print(MessageLevel.CRITICAL,"FORCING THREAD " + thread.getClass().getName() + " TO DIE $RESET!");
+                    thread.stop();
+                    getInstance().print(MessageLevel.WARNING,"Forced thread $YELLOW" + thread.getClass().getName() + " to die $RESET!");
+                }
             }
         });
         getInstance().print(MessageLevel.INFO,"$GREENIntterupted all non important threads!");
@@ -106,6 +140,7 @@ public class MeteorrComettServer {
     private void initTerminalReader() {
         initComponent("TerminalReader", () -> {
             getServerTerminal().setTerminalReader(new TerminalReader(getInstance(), getServerTerminal().getTerminal()));
+            TimeUnit.SECONDS.sleep(2);
             getServerTerminal().initReader();
         });
     }

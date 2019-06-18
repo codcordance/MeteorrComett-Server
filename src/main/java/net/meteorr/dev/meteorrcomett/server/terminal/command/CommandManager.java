@@ -1,6 +1,8 @@
 package net.meteorr.dev.meteorrcomett.server.terminal.command;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
+import net.meteorr.dev.meteorrcomett.server.utils.WaitableInlineThread;
+import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupInitializedException;
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
@@ -19,10 +21,11 @@ public class CommandManager {
         this.instance = instance;
     }
 
-    public void proceed(String input) throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
+    public synchronized void proceed(String input) throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
         if (input.equals("stop")) getInstance().stop();
         if (input.equals("testmsg")) {
-            new Thread(getInstance().getThreadGroup(),"TestRun") {
+
+            new WaitableInlineThread(getInstance().getThreadGroup(),"TestRun") {
 
                 @Override
                 public synchronized void run() {
