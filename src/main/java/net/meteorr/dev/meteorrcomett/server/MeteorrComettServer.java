@@ -64,30 +64,22 @@ public class MeteorrComettServer {
         List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
         threads.forEach(thread -> {
             if (!thread.getClass().isAnnotationPresent(MeteorrComettImportantThread.class)) {
-                if (thread.getClass().isAnnotationPresent(MeteorrComettWaitableThread.class)) {
-                    long timeout = thread.getClass().getAnnotation(MeteorrComettWaitableThread.class).timeout();
+                if (thread.getClass().isAnnotationPresent(MeteorrComettWaitableThread.class) || thread instanceof WaitableInlineThread) {
+                    long timeout = (thread instanceof WaitableInlineThread ? WaitableInlineThread.class : thread.getClass()).getAnnotation(MeteorrComettWaitableThread.class).timeout();
                     try {
-                        getInstance().print(MessageLevel.INFO,"Joining-- thread $GREEN" + thread.getClass().getName() + "$RESET!");
-                        wait(timeout);
-                        if (thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + " joined and died $RESET!");
+                        getInstance().print(MessageLevel.INFO,"Joinin thread $GREEN" + thread.getClass().getName() + "$RESET for " + timeout + " miliseconds...");
+                        long l = 0;
+                        while (l < timeout && thread.isAlive()) {
+                            wait(1);
+                            l++;
+                        }
+                        if (!thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + "$RESET joined and died!");
                         else {
                             getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
                             thread.interrupt();
                             getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
                         }
-                    } catch (InterruptedException ignored) { }
-                } else if(thread instanceof WaitableInlineThread) {
-                    long timeout = WaitableInlineThread.class.getAnnotation(MeteorrComettWaitableThread.class).timeout();
-                    try {
-                        getInstance().print(MessageLevel.INFO,"Joining-- thread $GREEN" + thread.getClass().getName() + "$RESET!");
-                        wait(timeout);
-                        if (thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + " joined and died $RESET!");
-                        else {
-                            getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
-                            thread.interrupt();
-                            getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
-                        }
-                    } catch (InterruptedException ignored) { }
+                    } catch (InterruptedException ignored) {}
                 } else {
                     getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
                     thread.interrupt();

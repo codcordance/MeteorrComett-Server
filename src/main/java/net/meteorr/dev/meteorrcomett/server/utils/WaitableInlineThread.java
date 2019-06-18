@@ -5,7 +5,7 @@ import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaita
 /**
  * @author RedLux
  */
-@MeteorrComettWaitableThread(timeout = 10000L)
+@MeteorrComettWaitableThread(timeout = 1000L)
 public class WaitableInlineThread extends Thread {
     public WaitableInlineThread(ThreadGroup threadGroup, String testRun) {
         super(threadGroup, testRun);

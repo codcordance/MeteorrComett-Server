@@ -8,9 +8,8 @@ import java.time.format.DateTimeFormatter;
  */
 public class ClockTime {
     private static final DateTimeFormatter clockFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-    private static final LocalDateTime clockTime = LocalDateTime.now();
 
     public static String getClockTime() {
-        return clockFormater.format(clockTime);
+        return clockFormater.format(LocalDateTime.now());
     }
 }

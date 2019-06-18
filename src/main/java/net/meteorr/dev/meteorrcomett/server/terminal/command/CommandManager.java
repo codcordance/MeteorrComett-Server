@@ -32,7 +32,7 @@ public class CommandManager {
                     for (int i = 0; i<10; i++) {
                         getInstance().print(MessageLevel.INFO, input, "test: $BG_CYAN" + (i + 1));
                         try {
-                            TimeUnit.SECONDS.sleep(5);
+                            TimeUnit.MILLISECONDS.sleep(500);
                         } catch (InterruptedException e) {
                             getInstance().getExceptionHandler().handle(e);
                         }
