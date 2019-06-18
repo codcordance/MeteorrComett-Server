@@ -1,12 +1,15 @@
 package net.meteorr.dev.meteorrcomett.server;
 
+import java.util.Arrays;
+
 /**
- * @author RedSpri
+ * @author RedLux
+ *
+ * Boostrap du serveur MeteorrComett
  */
-public class MeteorrComettServerBoostrap {
+public final class MeteorrComettServerBoostrap {
 
     public static void main(String[] args) throws Exception {
-        System.out.println("\n\n\n\n");
-        new MeteorrComettServer().main(args);
+        new MeteorrComettServer().start(Arrays.asList(args));
     }
 }

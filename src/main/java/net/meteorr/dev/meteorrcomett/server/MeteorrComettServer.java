@@ -1,14 +1,24 @@
 package net.meteorr.dev.meteorrcomett.server;
 
-import net.meteorr.dev.meteorrcomett.server.exception.TerminalNotInitializedException;
-import net.meteorr.dev.meteorrcomett.server.exception.TerminalNotRunningException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.ComponentFailedToInitializeException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotInitializedException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupInitializedException;
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.terminal.ServerTerminal;
+import net.meteorr.dev.meteorrcomett.server.terminal.TerminalReader;
+import net.meteorr.dev.meteorrcomett.server.utils.ComettRunnable;
 import net.meteorr.dev.meteorrcomett.server.terminal.command.CommandManager;
 import net.meteorr.dev.meteorrcomett.server.utils.ExceptionHandler;
+import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
+import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtil;
+
+import java.util.List;
 
 /**
  * @author RedLux
+ *
+ * Classe principale du serveur MeteorrComett
  */
 public class MeteorrComettServer {
 
@@ -17,6 +27,7 @@ public class MeteorrComettServer {
     private ExceptionHandler exceptionHandler;
     private ServerTerminal serverTerminal;
     private CommandManager commandManager;
+    private ThreadGroup threadGroup;
 
     public MeteorrComettServer() {
         instance = this;
@@ -24,6 +35,79 @@ public class MeteorrComettServer {
         exceptionHandler = null;
         serverTerminal = null;
         commandManager = null;
+        threadGroup = null;
+    }
+
+    public void start(List<String> args) {
+        this.exceptionHandler = new ExceptionHandler(getInstance());
+        this.serverTerminal = new ServerTerminal(getInstance());
+        this.threadGroup = null;
+        try {
+            getServerTerminal().init();
+        } catch (Exception e) {
+            this.getExceptionHandler().handle(e);
+        }
+        initCommandManager();
+        initThreadGroup();
+        initTerminalReader();
+        if (!args.contains("--nocheck")) {
+            print(MessageLevel.INFO, "You're running the MeteorrComett $PURPLESERVER");
+        }
+    }
+
+    public void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
+        getInstance().print(MessageLevel.INFO,"Stopping...");
+        getInstance().print(MessageLevel.INFO,"Intterupting non-importants threads...");
+        List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
+        threads.forEach(thread -> {
+            if (!thread.getClass().isAnnotationPresent(MeteorrComettImportantThread.class)) {
+                getInstance().print(MessageLevel.INFO,"Intterupting  thread $YELLOW" + thread.getClass().getName() + "$RESET...");
+                thread.interrupt();
+                getInstance().print(MessageLevel.INFO,"Intterupted  thread $GREEN" + thread.getClass().getName() + "$RESET!");
+            }
+        });
+        getInstance().print(MessageLevel.INFO,"$GREENIntterupted all non important threads!");
+        getServerTerminal().stop();
+        System.out.println("bye!");
+    }
+
+    public void print(MessageLevel level, String... content) {
+        try {
+            getServerTerminal().print(level, content);
+        } catch (TerminalNotInitializedException e) {
+            this.getExceptionHandler().handle(e);
+        }
+    }
+
+    private void initComponent(String componentName, ComettRunnable lambdainit) {
+        getInstance().print(MessageLevel.INFO,"Initializing " + componentName + "...");
+        try {
+            lambdainit.run(getInstance());
+        } catch (Exception e) {
+            try {
+                getInstance().print(MessageLevel.INFO,componentName + " initialization $REDfailed$RESET!");
+                throw new ComponentFailedToInitializeException(e);
+            } catch (ComponentFailedToInitializeException ex) {
+                ex.printStackTrace();
+            }
+        }
+        getInstance().print(MessageLevel.INFO,componentName + " initialization $GREENsucceed$RESET!");
+
+    }
+
+    private void initCommandManager() {
+        initComponent("CommandManager", () -> this.commandManager = new CommandManager(getInstance()));
+    }
+
+    private void initThreadGroup() {
+        initComponent("ThreadGroup", () -> this.threadGroup = new ThreadGroup("MeteorrComettServer"));
+    }
+
+    private void initTerminalReader() {
+        initComponent("TerminalReader", () -> {
+            getServerTerminal().setTerminalReader(new TerminalReader(getInstance(), getServerTerminal().getTerminal()));
+            getServerTerminal().initReader();
+        });
     }
 
     public CommandManager getCommandManager() {
@@ -42,36 +126,12 @@ public class MeteorrComettServer {
         return this.exceptionHandler;
     }
 
-    public void print(MessageLevel level, String... content) {
-        try {
-            serverTerminal.print(level, content);
-        } catch (TerminalNotInitializedException e) {
-            this.exceptionHandler.handle(e);
-        }
-    }
-
-    public void main(String[] args) {
-        this.exceptionHandler = new ExceptionHandler(getInstance());
-        this.commandManager = new CommandManager(getInstance());
-
-        serverTerminal = new ServerTerminal(getInstance());
-        try {
-            serverTerminal.init();
-        } catch (Exception e) {
-            this.exceptionHandler.handle(e);
-        }
-    }
-
-    public void issueCommand(String command) {
-        System.out.print("\rCommand issued: " + command + "\n");
-    }
-
     public boolean isRunning() {
-        return running;
+        return this.running;
     }
 
-    public void stop() throws TerminalNotRunningException {
-        getServerTerminal().stop();
-        System.out.println("bye!");
+    public ThreadGroup getThreadGroup() throws ThreadGroupInitializedException {
+        if (this.threadGroup == null) throw new ThreadGroupInitializedException();
+        return this.threadGroup;
     }
 }

@@ -1,8 +1,13 @@
 package net.meteorr.dev.meteorrcomett.server.terminal.command;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
-import net.meteorr.dev.meteorrcomett.server.exception.TerminalNotRunningException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupInitializedException;
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
+import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtil;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author RedSpri
@@ -14,12 +19,34 @@ public class CommandManager {
         this.instance = instance;
     }
 
-    public MeteorrComettServer getInstance() {
-        return this.instance;
+    public void proceed(String input) throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
+        if (input.equals("stop")) getInstance().stop();
+        if (input.equals("testmsg")) {
+            new Thread(getInstance().getThreadGroup(),"TestRun") {
+
+                @Override
+                public synchronized void run() {
+                    for (int i = 0; i<10; i++) {
+                        getInstance().print(MessageLevel.INFO, input, "test: $BG_CYAN" + (i + 1));
+                        try {
+                            TimeUnit.SECONDS.sleep(5);
+                        } catch (InterruptedException e) {
+                            getInstance().getExceptionHandler().handle(e);
+                        }
+                    }
+                }
+            }.start();
+        }
+        if (input.equals("listthread")) {
+            List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
+            final String[] s = {""};
+            threads.forEach(thread -> s[0] += "--> " + thread.getName() + " (" + thread.getState() + "): " + thread.getClass().getName() + "\n");
+            getInstance().print(MessageLevel.DEBUG, "Il y a actuellement " + threads.size() + " sous-threads: ", s[0]);
+        }
+
     }
 
-    public void proceed(String input) throws TerminalNotRunningException {
-        if (input.equals("stop")) getInstance().stop();
-        getInstance().print(MessageLevel.DEBUG, "command proceed: " + input);
+    public MeteorrComettServer getInstance() {
+        return this.instance;
     }
 }

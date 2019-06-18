@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.exception;
+package net.meteorr.dev.meteorrcomett.server.utils.exception;
 
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 
@@ -14,7 +14,6 @@ public class MeteorrComettServerException extends Exception {
         super(message);
         this.level = level;
     }
-
     public MessageLevel getLevel() {
         return level;
     }

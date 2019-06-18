@@ -1,16 +1,13 @@
 package net.meteorr.dev.meteorrcomett.server.terminal;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
-import net.meteorr.dev.meteorrcomett.server.exception.*;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
 import net.meteorr.dev.meteorrcomett.server.utils.ClockTime;
 import net.meteorr.dev.meteorrcomett.server.utils.ColorCode;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import static org.fusesource.jansi.Ansi.*;
-import static org.fusesource.jansi.Ansi.Color.*;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,6 +25,112 @@ public class ServerTerminal {
         this.terminalReader = null;
     }
 
+    public synchronized void init() throws TerminalAlreadyInitializedException, TerminalInitializingException, TerminalFailedToInitializeException, InterruptedException {
+        initAnsiConsole();
+        initTerminal();
+        if (!this.isInitialized()) throw new TerminalFailedToInitializeException();
+        else {
+            getTerminal().writer().println("");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|=-=--=--=--=--=--=--=--=--=--=--=--=--=-=--=-=--=--=--=--=--=--=--=--=--=--=-=|#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|                                                                              |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|   ▄████████  ▄██████▄    ▄▄▄▄███▄▄▄▄      ▄████████     ███         ███      |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|  ███    ███ ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███ ▀█████████▄ ▀█████████▄  |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|  ███    █▀  ███    ███ ███   ███   ███   ███    █▀     ▀███▀▀██    ▀███▀▀██  |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|  ███        ███    ███ ███   ███   ███  ▄███▄▄▄         ███   ▀     ███   ▀  |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|  ███    █▄  ███    ███ ███   ███   ███   ███    █▄      ███         ███      |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|  ███    ███ ███    ███ ███   ███   ███   ███    ███     ███         ███      |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|  ████████▀   ▀██████▀   ▀█   ███   █▀    ██████████    ▄████▀      ▄████▀    |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|                                                                              |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|               " + ColorCode.YELLOW.getAsciiCode() + "Meteorr Scalling Infrastructure & Messaging Tool" + ColorCode.RED.getAsciiCode() + "               |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|                              " + ColorCode.CYAN.getAsciiCode() + "by RedLux & Niamor" + ColorCode.RED.getAsciiCode() + "                              |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|                                                                              |#");
+            getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|=-=--=--=--=--=--=--=--=--=--=--=--=--=-=--=-=--=--=--=--=--=--=--=--=--=--=-=|#");
+            getTerminal().writer().println("");
+            getInstance().print(MessageLevel.INFO,"Initializing terminal...");
+            getInstance().print(MessageLevel.INFO,getTerminal().getName()+": " + getTerminal().getType());
+            getInstance().print(MessageLevel.INFO,"Terminal initialiazed $GREENsuccessfully$RESET!");
+        }
+    }
+
+    private void initAnsiConsole() throws TerminalInitializingException {
+        try {
+            AnsiConsole.systemInstall();
+        } catch (Exception e) {
+            throw new TerminalInitializingException(e);
+        }
+    }
+
+    private void initTerminal() throws TerminalAlreadyInitializedException, TerminalInitializingException {
+        if (this.isInitialized()) throw new TerminalAlreadyInitializedException();
+        TerminalBuilder builder = TerminalBuilder.builder();
+        try {
+            terminal = builder.build();
+        } catch (Exception e) {
+            throw new TerminalInitializingException(e);
+        }
+        this.initialized = true;
+    }
+
+    public void setTerminalReader(TerminalReader terminalReader) throws TerminalReaderAlreadySetException {
+        if (getTerminalReader() != null) throw new TerminalReaderAlreadySetException();
+        this.terminalReader = terminalReader;
+    }
+
+    public void initReader() throws TerminalReaderNotSetException {
+        if (getTerminalReader() == null) throw new TerminalReaderNotSetException();
+        getTerminalReader().start();
+    }
+
+    public void print(MessageLevel level, String... content) throws TerminalNotInitializedException {
+        if (!this.isInitialized()) throw new TerminalNotInitializedException();
+        try {
+            TimeUnit.MILLISECONDS.sleep(100L);
+        } catch (InterruptedException ignored) {}
+        if (getTerminalReader() == null || !getTerminalReader().isRunning()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("$RESET");
+            builder.append(ClockTime.getClockTime());
+            builder.append(" [");
+            builder.append(level.getFgColor().getAsciiCode());
+            builder.append(level.getIdentifier());
+            builder.append("$RESET");
+            builder.append("] > ");
+            builder.append(level.getBgColor().getAsciiCode());
+            for (String line : content) builder.append(line).append("\n");
+            builder.append("$RESET");
+            String s = builder.toString();
+            for (ColorCode c : ColorCode.values()) s = s.replace("$" + c.toString(), c.getAsciiCode());
+            terminal.writer().print(s);
+            terminal.writer().flush();
+        } else {
+            StringBuilder builder = new StringBuilder();
+            builder.append("$RESET");
+            builder.append(ClockTime.getClockTime());
+            builder.append(" [");
+            builder.append(level.getFgColor().getAsciiCode());
+            builder.append(level.getIdentifier());
+            builder.append("$RESET");
+            builder.append("] > ");
+            builder.append(level.getBgColor().getAsciiCode());
+            int i = 1;
+            for (String line : content) {
+                builder.append(line).append( i != content.length ? "\n": "");
+                i++;
+            }
+            builder.append("$RESET");
+            String s = builder.toString();
+            for (ColorCode c : ColorCode.values()) s = s.replace("$" + c.toString(), c.getAsciiCode());
+            getTerminalReader().getReader().printAbove((s));
+        }
+    }
+
+    public void stop() throws TerminalNotRunningException, InterruptedException {
+        getInstance().print(MessageLevel.INFO,"Stopping terminal...");
+        getTerminalReader().end();
+        getInstance().print(MessageLevel.INFO,"Terminal stopped $GREENsuccessfully$RESET!");
+        this.initialized = false;
+    }
+
     public MeteorrComettServer getInstance() {
         return this.instance;
     }
@@ -42,91 +145,5 @@ public class ServerTerminal {
 
     public boolean isInitialized() {
         return this.initialized;
-    }
-
-    public void init() throws TerminalAlreadyInitializedException, TerminalInitializingException, TerminalFailedToInitializeException {
-        initAnsiConsole();
-        initTerminal();
-        if (!this.isInitialized()) throw new TerminalFailedToInitializeException();
-        else {
-            System.out.println(ansi().eraseScreen());
-            terminal.writer().println("");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|==========================================================|#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|                                                          |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|   ██████╗ ██████╗ ███╗   ███╗███████╗████████╗████████╗  |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|  ██╔════╝██╔═══██╗████╗ ████║██╔════╝╚══██╔══╝╚══██╔══╝  |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|  ██║     ██║   ██║██║╚██╔╝██║██╔══╝     ██║      ██║     |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|  ██║     ██║   ██║██║╚██╔╝██║██╔══╝     ██║      ██║     |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|  ╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗   ██║      ██║     |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|   ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝   ╚═╝      ╚═╝     |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|                                                          |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|     " + ColorCode.YELLOW.getAsciiCode() + "Meteorr Scalling Infrastructure & Messaging Tool" + ColorCode.RED.getAsciiCode()+"     |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|                    " + ColorCode.CYAN.getAsciiCode() + "by RedLux & Niamor" + ColorCode.RED.getAsciiCode() + "                    |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|                                                          |#");
-            terminal.writer().println(ColorCode.RED.getAsciiCode() + "#|==========================================================|#");
-            terminal.writer().println("");
-            getInstance().print(MessageLevel.INFO,"Initializing terminal...");
-            getInstance().print(MessageLevel.INFO,terminal.getName()+": "+terminal.getType());
-            getInstance().print(MessageLevel.INFO,"Terminal initalized " + ColorCode.GREEN.getAsciiCode() + "successfully" + ColorCode.RESET.getAsciiCode() + "!");
-            getInstance().print(MessageLevel.INFO,"Starting terminal...");
-            initReader();
-            getInstance().print(MessageLevel.INFO,"Terminal started " + ColorCode.GREEN.getAsciiCode() + "successfully" + ColorCode.RESET.getAsciiCode() + "!");
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            getInstance().print(MessageLevel.DEBUG, "hello!!");
-
-        }
-    }
-
-    private void initAnsiConsole() throws TerminalInitializingException {
-        try {
-            AnsiConsole.systemInstall();
-        } catch (Exception e) {
-            throw new TerminalInitializingException(e);
-        }
-
-    }
-
-    private void initTerminal() throws TerminalAlreadyInitializedException, TerminalInitializingException {
-        if (this.isInitialized()) throw new TerminalAlreadyInitializedException();
-        TerminalBuilder builder = TerminalBuilder.builder();
-        try {
-            terminal = builder.build();
-        } catch (Exception e) {
-            throw new TerminalInitializingException(e);
-        }
-        this.initialized = true;
-    }
-
-    private void initReader() {
-        this.terminalReader = new TerminalReader(getInstance(), getTerminal());
-        getTerminalReader().start();
-    }
-
-    public void print(MessageLevel level, String... content) throws TerminalNotInitializedException {
-        if (!this.isInitialized()) throw new TerminalNotInitializedException();
-        StringBuilder builder = new StringBuilder();
-        builder.append(ColorCode.RESET.getAsciiCode());
-        builder.append(ClockTime.getClockTime());
-        builder.append(" [");
-        builder.append(level.getFgColor().getAsciiCode());
-        builder.append(level.getIdentifier());
-        builder.append(ColorCode.RESET.getAsciiCode());
-        builder.append("] > ");
-        builder.append(level.getBgColor().getAsciiCode());
-        for (String line : content) builder.append(line).append("\n");
-        builder.append(ColorCode.RESET.getAsciiCode());
-        terminal.writer().print(builder.toString());
-        terminal.writer().flush();
-    }
-
-    public void stop() throws TerminalNotRunningException {
-        getInstance().print(MessageLevel.INFO,"Stopping terminal...");
-        getTerminalReader().end();
-        getInstance().print(MessageLevel.INFO,"Terminal stopped " + ColorCode.GREEN.getAsciiCode() + "successfully" + ColorCode.RESET.getAsciiCode() + "!");
-
     }
 }

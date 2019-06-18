@@ -1,7 +1,7 @@
 package net.meteorr.dev.meteorrcomett.server.utils;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
-import net.meteorr.dev.meteorrcomett.server.exception.MeteorrComettServerException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.MeteorrComettServerException;
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 
 import java.io.PrintWriter;
@@ -15,10 +15,6 @@ public class ExceptionHandler {
 
     public ExceptionHandler(MeteorrComettServer instance) {
         this.instance = instance;
-    }
-
-    public MeteorrComettServer getInstance() {
-        return this.instance;
     }
 
     public void handle(Exception e) {
@@ -38,5 +34,9 @@ public class ExceptionHandler {
         PrintWriter printWriter = new PrintWriter(stringWriter);
         e.printStackTrace(printWriter);
         return stringWriter.toString();
+    }
+
+    public MeteorrComettServer getInstance() {
+        return this.instance;
     }
 }

@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.exception;
+package net.meteorr.dev.meteorrcomett.server.utils.exception;
 
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 
@@ -7,7 +7,7 @@ import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
  *
  * Erreur quand le terminal n'a pas réussi à s'initialiser
  */
-public class TerminalFailedToInitializeException extends MeteorrComettServerException {
+public final class TerminalFailedToInitializeException extends MeteorrComettServerException {
 
     public TerminalFailedToInitializeException() {
         super(MessageLevel.CRITICAL, "The Server Terminal failed to initialize!");
