@@ -1,10 +1,10 @@
 package net.meteorr.dev.meteorrcomett.server;
 
-import net.meteorr.dev.meteorrcomett.server.exception.TerminalAlreadyInitializedException;
-import net.meteorr.dev.meteorrcomett.server.exception.TerminalInitializingException;
 import net.meteorr.dev.meteorrcomett.server.exception.TerminalNotInitializedException;
+import net.meteorr.dev.meteorrcomett.server.exception.TerminalNotRunningException;
 import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.terminal.ServerTerminal;
+import net.meteorr.dev.meteorrcomett.server.terminal.command.CommandManager;
 import net.meteorr.dev.meteorrcomett.server.utils.ExceptionHandler;
 
 /**
@@ -16,12 +16,18 @@ public class MeteorrComettServer {
     private Boolean running;
     private ExceptionHandler exceptionHandler;
     private ServerTerminal serverTerminal;
+    private CommandManager commandManager;
 
     public MeteorrComettServer() {
         instance = this;
         running = false;
         exceptionHandler = null;
         serverTerminal = null;
+        commandManager = null;
+    }
+
+    public CommandManager getCommandManager() {
+        return this.commandManager;
     }
 
     public MeteorrComettServer getInstance() {
@@ -30,6 +36,10 @@ public class MeteorrComettServer {
 
     public ServerTerminal getServerTerminal() {
         return this.serverTerminal;
+    }
+
+    public ExceptionHandler getExceptionHandler() {
+        return this.exceptionHandler;
     }
 
     public void print(MessageLevel level, String... content) {
@@ -42,6 +52,7 @@ public class MeteorrComettServer {
 
     public void main(String[] args) {
         this.exceptionHandler = new ExceptionHandler(getInstance());
+        this.commandManager = new CommandManager(getInstance());
 
         serverTerminal = new ServerTerminal(getInstance());
         try {
@@ -49,10 +60,6 @@ public class MeteorrComettServer {
         } catch (Exception e) {
             this.exceptionHandler.handle(e);
         }
-
-        /**ThreadConsoleReader threadConsoleReader = new ThreadConsoleReader(instance);
-         threadConsoleReader.setDaemon(true);
-         threadConsoleReader.start();**/
     }
 
     public void issueCommand(String command) {
@@ -61,5 +68,10 @@ public class MeteorrComettServer {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public void stop() throws TerminalNotRunningException {
+        getServerTerminal().stop();
+        System.out.println("bye!");
     }
 }

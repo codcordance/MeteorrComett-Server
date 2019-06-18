@@ -5,7 +5,7 @@ import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
 /**
  * @author RedSpri
  *
- *
+ * Classe servant de modèle pour les exceptions personnalisées de MeteorrComett
  */
 public class MeteorrComettServerException extends Exception {
     private MessageLevel level;
