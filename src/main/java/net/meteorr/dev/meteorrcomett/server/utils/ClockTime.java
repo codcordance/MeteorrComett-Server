@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
  * @author RedLux
  */
 public class ClockTime {
+
     private static final DateTimeFormatter clockFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     public static String getClockTime() {

@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.terminal;
+package net.meteorr.dev.meteorrcomett.server.console;
 
 import net.meteorr.dev.meteorrcomett.server.utils.ColorCode;
 

@@ -1,16 +1,17 @@
 package net.meteorr.dev.meteorrcomett.server;
 
+import net.meteorr.dev.meteorrcomett.server.console.ServerLogger;
 import net.meteorr.dev.meteorrcomett.server.utils.WaitableInlineThread;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ComponentFailedToInitializeException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotInitializedException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupInitializedException;
-import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
-import net.meteorr.dev.meteorrcomett.server.terminal.ServerTerminal;
-import net.meteorr.dev.meteorrcomett.server.terminal.TerminalReader;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
+import net.meteorr.dev.meteorrcomett.server.console.ServerTerminal;
+import net.meteorr.dev.meteorrcomett.server.console.TerminalReader;
 import net.meteorr.dev.meteorrcomett.server.utils.ComettRunnable;
-import net.meteorr.dev.meteorrcomett.server.terminal.command.CommandManager;
+import net.meteorr.dev.meteorrcomett.server.console.command.CommandManager;
 import net.meteorr.dev.meteorrcomett.server.utils.ExceptionHandler;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtil;
@@ -31,6 +32,7 @@ public class MeteorrComettServer {
     private ServerTerminal serverTerminal;
     private CommandManager commandManager;
     private ThreadGroup threadGroup;
+    private ServerLogger serverLogger;
 
     public MeteorrComettServer() {
         instance = this;
@@ -50,15 +52,16 @@ public class MeteorrComettServer {
         } catch (Exception e) {
             this.getExceptionHandler().handle(e);
         }
-        initCommandManager();
         initThreadGroup();
+        initServerLogger();
+        initCommandManager();
         initTerminalReader();
         if (!args.contains("--nocheck")) {
             print(MessageLevel.INFO, "You're running the MeteorrComett $PURPLESERVER");
         }
     }
 
-    public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupInitializedException {
+    public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupNotInitializedException {
         getInstance().print(MessageLevel.INFO,"Stopping...");
         getInstance().print(MessageLevel.INFO,"Intterupting non-importants threads...");
         List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
@@ -100,7 +103,7 @@ public class MeteorrComettServer {
     public void print(MessageLevel level, String... content) {
         try {
             getServerTerminal().print(level, content);
-        } catch (TerminalNotInitializedException e) {
+        } catch (Exception e) {
             this.getExceptionHandler().handle(e);
         }
     }
@@ -123,6 +126,10 @@ public class MeteorrComettServer {
 
     private void initCommandManager() {
         initComponent("CommandManager", () -> this.commandManager = new CommandManager(getInstance()));
+    }
+
+    private void initServerLogger() {
+        initComponent("ServerLogger", () -> this.serverLogger = new ServerLogger(getInstance()));
     }
 
     private void initThreadGroup() {
@@ -157,8 +164,12 @@ public class MeteorrComettServer {
         return this.running;
     }
 
-    public ThreadGroup getThreadGroup() throws ThreadGroupInitializedException {
-        if (this.threadGroup == null) throw new ThreadGroupInitializedException();
+    public ThreadGroup getThreadGroup() throws ThreadGroupNotInitializedException {
+        if (this.threadGroup == null) throw new ThreadGroupNotInitializedException();
         return this.threadGroup;
+    }
+
+    public ServerLogger getServerLogger() {
+        return this.serverLogger;
     }
 }

@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.terminal;
+package net.meteorr.dev.meteorrcomett.server.console;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
@@ -8,6 +8,7 @@ import org.fusesource.jansi.AnsiConsole;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,7 +47,7 @@ public class ServerTerminal {
             getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|                                                                              |#");
             getTerminal().writer().println(ColorCode.RED.getAsciiCode() + "#|=-=--=--=--=--=--=--=--=--=--=--=--=--=-=--=-=--=--=--=--=--=--=--=--=--=--=-=|#");
             getTerminal().writer().println("");
-            getInstance().print(MessageLevel.INFO,"Initializing terminal...");
+            getInstance().print(MessageLevel.INFO,"Initializing console...");
             getInstance().print(MessageLevel.INFO,getTerminal().getName()+": " + getTerminal().getType());
             getInstance().print(MessageLevel.INFO,"Terminal initialiazed $GREENsuccessfully$RESET!");
         }
@@ -81,8 +82,9 @@ public class ServerTerminal {
         getTerminalReader().start();
     }
 
-    public void print(MessageLevel level, String... content) throws TerminalNotInitializedException {
+    public void print(MessageLevel level, String... content) throws TerminalNotInitializedException, IOException, ThreadGroupNotInitializedException {
         if (!this.isInitialized()) throw new TerminalNotInitializedException();
+        if (getInstance().getServerLogger() != null) getInstance().getServerLogger().write(level, content);
         try {
             TimeUnit.MILLISECONDS.sleep(100L);
         } catch (InterruptedException ignored) {}
@@ -125,7 +127,7 @@ public class ServerTerminal {
     }
 
     public void stop() throws TerminalNotRunningException, InterruptedException {
-        getInstance().print(MessageLevel.INFO,"Stopping terminal...");
+        getInstance().print(MessageLevel.INFO,"Stopping console...");
         getTerminalReader().end();
         getInstance().print(MessageLevel.INFO,"Terminal stopped $GREENsuccessfully$RESET!");
         this.initialized = false;

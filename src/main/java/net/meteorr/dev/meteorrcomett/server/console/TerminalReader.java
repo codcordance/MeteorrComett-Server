@@ -1,9 +1,9 @@
-package net.meteorr.dev.meteorrcomett.server.terminal;
+package net.meteorr.dev.meteorrcomett.server.console;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalAlreadyRunningException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupInitializedException;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -21,7 +21,7 @@ public class TerminalReader extends Thread {
     private boolean running;
     private LineReader reader;
 
-    public TerminalReader(MeteorrComettServer instance, Terminal terminal) throws ThreadGroupInitializedException {
+    public TerminalReader(MeteorrComettServer instance, Terminal terminal) throws ThreadGroupNotInitializedException {
         super(instance.getThreadGroup(),"MeteorrComettServerTerminalReader");
         this.instance = instance;
         this.running = false;

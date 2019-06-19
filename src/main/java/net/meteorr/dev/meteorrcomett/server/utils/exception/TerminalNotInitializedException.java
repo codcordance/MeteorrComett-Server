@@ -1,11 +1,11 @@
 package net.meteorr.dev.meteorrcomett.server.utils.exception;
 
-import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 
 /**
  * @author RedLux
  *
- * Erreur quand le terminal n'est pas initialisé
+ * Erreur quand le console n'est pas initialisé
  */
 public final class TerminalNotInitializedException extends MeteorrComettServerException {
 

@@ -2,7 +2,7 @@ package net.meteorr.dev.meteorrcomett.server.utils;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.MeteorrComettServerException;
-import net.meteorr.dev.meteorrcomett.server.terminal.MessageLevel;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
