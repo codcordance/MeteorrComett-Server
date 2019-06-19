@@ -1,6 +1,7 @@
-package net.meteorr.dev.meteorrcomett.server.console;
+package net.meteorr.dev.meteorrcomett.server.console.terminal;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalAlreadyRunningException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
@@ -12,7 +13,7 @@ import org.jline.terminal.Terminal;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author RedSpri
+ * @author RedLux
  */
 @MeteorrComettImportantThread(name="MeteorrComettServerTerminalReader")
 public class TerminalReader extends Thread {
@@ -31,6 +32,7 @@ public class TerminalReader extends Thread {
 
     public void run() {
         super.run();
+        getInstance().print(MessageLevel.INFO, "Running terminal started.");
         if (this.isRunning()) try {
             throw new TerminalAlreadyRunningException();
         } catch (TerminalAlreadyRunningException e) {
@@ -42,7 +44,10 @@ public class TerminalReader extends Thread {
             try {
                 getInstance().getCommandManager().proceed(getReader().readLine("%M%P > "));
             } catch (Exception e) {
-                getInstance().getExceptionHandler().handle(e);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                    if (isRunning()) getInstance().getExceptionHandler().handle(e);
+                } catch (InterruptedException ignored) {}
             }
 
         }

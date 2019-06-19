@@ -1,7 +1,7 @@
 package net.meteorr.dev.meteorrcomett.server.messaging;
 
 /**
- * @author RedSpri
+ * @author RedLux
  */
 public class MessagingServer {
 

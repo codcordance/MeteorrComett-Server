@@ -1,7 +1,5 @@
 package net.meteorr.dev.meteorrcomett.server.console;
 
-import net.meteorr.dev.meteorrcomett.server.utils.ColorCode;
-
 /**
  * @author RedLux
  *
@@ -67,7 +65,7 @@ public enum MessageLevel {
     /**
      * Récupère la couleur de premier plan du niveau
      *
-     * @return un {@link net.meteorr.dev.meteorrcomett.server.utils.ColorCode} correspondant à la couleur de premier plan du niveau
+     * @return un {@link ColorCode} correspondant à la couleur de premier plan du niveau
      */
     public ColorCode getFgColor() {
         return this.fgColor;
@@ -76,7 +74,7 @@ public enum MessageLevel {
     /**
      * Récupère la couleur d'arrière plan du niveau
      *
-     * @return un {@link net.meteorr.dev.meteorrcomett.server.utils.ColorCode} correspondant à la couleur d'arrière plan du niveau
+     * @return un {@link ColorCode} correspondant à la couleur d'arrière plan du niveau
      */
     public ColorCode getBgColor() {
         return this.bgColor;

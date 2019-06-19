@@ -1,9 +1,10 @@
-package net.meteorr.dev.meteorrcomett.server.console;
+package net.meteorr.dev.meteorrcomett.server.console.terminal;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
 import net.meteorr.dev.meteorrcomett.server.utils.ClockTime;
-import net.meteorr.dev.meteorrcomett.server.utils.ColorCode;
+import net.meteorr.dev.meteorrcomett.server.console.ColorCode;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -75,11 +76,13 @@ public class ServerTerminal {
     public void setTerminalReader(TerminalReader terminalReader) throws TerminalReaderAlreadySetException {
         if (getTerminalReader() != null) throw new TerminalReaderAlreadySetException();
         this.terminalReader = terminalReader;
+        getInstance().print(MessageLevel.INFO, "$GREENTerminal reader successfully set!");
     }
 
     public void initReader() throws TerminalReaderNotSetException {
         if (getTerminalReader() == null) throw new TerminalReaderNotSetException();
         getTerminalReader().start();
+        getInstance().print(MessageLevel.INFO, "$GREENTerminal reader successfully initialized!");
     }
 
     public void print(MessageLevel level, String... content) throws TerminalNotInitializedException, IOException, ThreadGroupNotInitializedException {
@@ -126,11 +129,15 @@ public class ServerTerminal {
         }
     }
 
-    public void stop() throws TerminalNotRunningException, InterruptedException {
-        getInstance().print(MessageLevel.INFO,"Stopping console...");
-        getTerminalReader().end();
-        getInstance().print(MessageLevel.INFO,"Terminal stopped $GREENsuccessfully$RESET!");
+    public void stop() {
+        getInstance().print(MessageLevel.INFO,"Stopping terminal...");
         this.initialized = false;
+    }
+
+    public void stopReader() throws TerminalNotRunningException, InterruptedException {
+        getInstance().print(MessageLevel.INFO,"Stopping terminal reader...");
+        getTerminalReader().end();
+        getInstance().print(MessageLevel.INFO,"Terminal reader stopped $GREENsuccessfully$RESET!");
     }
 
     public MeteorrComettServer getInstance() {

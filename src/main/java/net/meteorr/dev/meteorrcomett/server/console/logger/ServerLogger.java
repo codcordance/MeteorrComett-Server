@@ -1,12 +1,17 @@
-package net.meteorr.dev.meteorrcomett.server.console;
+package net.meteorr.dev.meteorrcomett.server.console.logger;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
+import net.meteorr.dev.meteorrcomett.server.console.logger.LoggerWritter;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ServerLoggerInitException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
 
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * @author RedLux
+ */
 public class ServerLogger {
     private final MeteorrComettServer instance;
     private final File logFile;

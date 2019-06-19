@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.utils;
+package net.meteorr.dev.meteorrcomett.server.console;
 
 /**
  * @author RedLux

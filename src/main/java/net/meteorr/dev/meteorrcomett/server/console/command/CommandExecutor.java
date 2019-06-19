@@ -1,10 +1,13 @@
 package net.meteorr.dev.meteorrcomett.server.console.command;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
-import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
+import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
 
-@MeteorrComettWaitableThread(timeout = 10000)
+/**
+ * @author RedLux
+ */
+@MeteorrComettImportantThread(name="MeteorrComettServerCommandExecutor")
 public class CommandExecutor extends Thread {
     private final MeteorrComettServer instance;
     private ComettServerCommand command;
@@ -25,19 +28,19 @@ public class CommandExecutor extends Thread {
         this.running = true;
     }
 
-    public ComettServerCommand getCommand() {
+    public synchronized ComettServerCommand getCommand() {
         return command;
     }
 
-    public String[] getArgs() {
+    public synchronized String[] getArgs() {
         return args;
     }
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return running;
     }
 
-    public MeteorrComettServer getInstance() {
+    public synchronized MeteorrComettServer getInstance() {
         return instance;
     }
 
@@ -50,11 +53,15 @@ public class CommandExecutor extends Thread {
             getInstance().getExceptionHandler().handle(e);
         }
         do {
-            getCommand().execute(getInstance(), getArgs());
-            this.args = null;
-            this.running = false;
             try {
-                wait();
+                getCommand().execute(getInstance(), getArgs());
+            } catch (Exception e) {
+                getInstance().getExceptionHandler().handle(e);
+            }
+            this.args = null;
+            this.command = null;
+            try {
+                if (isRunning()) wait();
             } catch (InterruptedException e) {
                 getInstance().getExceptionHandler().handle(e);
             }

@@ -1,8 +1,9 @@
-package net.meteorr.dev.meteorrcomett.server.console;
+package net.meteorr.dev.meteorrcomett.server.console.logger;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.utils.ClockTime;
-import net.meteorr.dev.meteorrcomett.server.utils.ColorCode;
+import net.meteorr.dev.meteorrcomett.server.console.ColorCode;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ServerLoggerWriteException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
@@ -12,7 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * @author RedSpri
+ * @author RedLux
  */
 @MeteorrComettWaitableThread(timeout = 1000)
 public class LoggerWritter extends Thread {

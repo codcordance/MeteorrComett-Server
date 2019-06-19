@@ -2,6 +2,9 @@ package net.meteorr.dev.meteorrcomett.server.console.command;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 
+/**
+ * @author RedLux
+ */
 public abstract class ComettServerCommand {
     private final String label;
 
@@ -13,5 +16,5 @@ public abstract class ComettServerCommand {
         return label;
     }
 
-    public abstract void execute(MeteorrComettServer instance, String[] args);
+    public abstract void execute(MeteorrComettServer instance, String[] args) throws Exception;
 }

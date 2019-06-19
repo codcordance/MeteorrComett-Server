@@ -1,21 +1,25 @@
 package net.meteorr.dev.meteorrcomett.server;
 
-import net.meteorr.dev.meteorrcomett.server.console.ServerLogger;
-import net.meteorr.dev.meteorrcomett.server.utils.WaitableInlineThread;
+import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
+import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.FailedToReflectCommandException;
+import net.meteorr.dev.meteorrcomett.server.utils.tools.ReflectionUtils;
+import net.meteorr.dev.meteorrcomett.server.utils.tools.WaitableInlineThread;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ComponentFailedToInitializeException;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotInitializedException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
-import net.meteorr.dev.meteorrcomett.server.console.ServerTerminal;
-import net.meteorr.dev.meteorrcomett.server.console.TerminalReader;
-import net.meteorr.dev.meteorrcomett.server.utils.ComettRunnable;
+import net.meteorr.dev.meteorrcomett.server.console.terminal.ServerTerminal;
+import net.meteorr.dev.meteorrcomett.server.console.terminal.TerminalReader;
+import net.meteorr.dev.meteorrcomett.server.utils.tools.ComettRunnable;
 import net.meteorr.dev.meteorrcomett.server.console.command.CommandManager;
-import net.meteorr.dev.meteorrcomett.server.utils.ExceptionHandler;
+import net.meteorr.dev.meteorrcomett.server.utils.tools.ExceptionHandler;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtil;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +59,8 @@ public class MeteorrComettServer {
         initThreadGroup();
         initServerLogger();
         initCommandManager();
+        initCommandExecutor();
+        initCommands();
         initTerminalReader();
         if (!args.contains("--nocheck")) {
             print(MessageLevel.INFO, "You're running the MeteorrComett $PURPLESERVER");
@@ -63,6 +69,10 @@ public class MeteorrComettServer {
 
     public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupNotInitializedException {
         getInstance().print(MessageLevel.INFO,"Stopping...");
+        getServerTerminal().stopReader();
+        getInstance().print(MessageLevel.INFO,"Ending $YELLOWCommandExecutor$RESET...");
+        getCommandManager().getCommandExecutor().end();
+        getInstance().print(MessageLevel.INFO,"Ended $GREENCommandExecutor$RESET!");
         getInstance().print(MessageLevel.INFO,"Intterupting non-importants threads...");
         List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
         threads.forEach(thread -> {
@@ -97,7 +107,7 @@ public class MeteorrComettServer {
         });
         getInstance().print(MessageLevel.INFO,"$GREENIntterupted all non important threads!");
         getServerTerminal().stop();
-        System.out.println("bye!");
+        System.out.println("Stopped.");
     }
 
     public void print(MessageLevel level, String... content) {
@@ -120,12 +130,21 @@ public class MeteorrComettServer {
                 ex.printStackTrace();
             }
         }
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            getExceptionHandler().handle(e);
+        }
         getInstance().print(MessageLevel.INFO,componentName + " initialization $GREENsucceed$RESET!");
 
     }
 
     private void initCommandManager() {
         initComponent("CommandManager", () -> this.commandManager = new CommandManager(getInstance()));
+    }
+
+    private void initCommandExecutor() {
+        initComponent("CommandExecutor", () -> this.getCommandManager().initExecutor());
     }
 
     private void initServerLogger() {
@@ -138,9 +157,27 @@ public class MeteorrComettServer {
 
     private void initTerminalReader() {
         initComponent("TerminalReader", () -> {
+            getInstance().print(MessageLevel.INFO, "Setting terminal reader...");
             getServerTerminal().setTerminalReader(new TerminalReader(getInstance(), getServerTerminal().getTerminal()));
+            getInstance().print(MessageLevel.INFO, "Initializing terminal reader...");
             TimeUnit.SECONDS.sleep(2);
             getServerTerminal().initReader();
+        });
+    }
+
+    private void initCommands() {
+        initComponent("Commands", () -> {
+            Arrays.asList(ReflectionUtils.getClasses("net.meteorr.dev.meteorrcomett.server.commands")).forEach(aClass -> {
+                try {
+                    getCommandManager().registerCommand((ComettServerCommand) aClass.getConstructor().newInstance());
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    try {
+                        throw new FailedToReflectCommandException(e);
+                    } catch (FailedToReflectCommandException ex) {
+                        getExceptionHandler().handle(e);
+                    }
+                }
+            });
         });
     }
 

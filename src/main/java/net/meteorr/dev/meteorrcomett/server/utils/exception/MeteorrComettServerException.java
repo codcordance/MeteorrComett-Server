@@ -3,7 +3,7 @@ package net.meteorr.dev.meteorrcomett.server.utils.exception;
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 
 /**
- * @author RedSpri
+ * @author RedLux
  *
  * Classe servant de modèle pour les exceptions personnalisées de MeteorrComett
  */

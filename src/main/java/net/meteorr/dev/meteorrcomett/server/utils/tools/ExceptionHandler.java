@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.utils;
+package net.meteorr.dev.meteorrcomett.server.utils.tools;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.MeteorrComettServerException;
