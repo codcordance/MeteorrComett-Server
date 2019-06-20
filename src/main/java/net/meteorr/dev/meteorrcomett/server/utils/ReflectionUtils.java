@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.utils.tools;
+package net.meteorr.dev.meteorrcomett.server.utils;
 
 import java.io.File;
 import java.io.IOException;

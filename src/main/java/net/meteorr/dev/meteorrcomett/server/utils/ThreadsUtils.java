@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @author RedLux
  */
-public class ThreadsUtil {
+public class ThreadsUtils {
     private static ThreadGroup rootThreadGroup = null;
 
     public static ThreadGroup getRootThreadGroup() {

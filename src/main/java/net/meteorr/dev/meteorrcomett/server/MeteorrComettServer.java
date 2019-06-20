@@ -2,22 +2,20 @@ package net.meteorr.dev.meteorrcomett.server;
 
 import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
 import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.FailedToReflectCommandException;
-import net.meteorr.dev.meteorrcomett.server.utils.tools.ReflectionUtils;
-import net.meteorr.dev.meteorrcomett.server.utils.tools.WaitableInlineThread;
+import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
+import net.meteorr.dev.meteorrcomett.server.utils.ReflectionUtils;
+import net.meteorr.dev.meteorrcomett.server.utils.codetools.WaitableInlineThread;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.ComponentFailedToInitializeException;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.TerminalNotRunningException;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.ServerTerminal;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.TerminalReader;
-import net.meteorr.dev.meteorrcomett.server.utils.tools.ComettRunnable;
+import net.meteorr.dev.meteorrcomett.server.utils.codetools.ComettRunnable;
 import net.meteorr.dev.meteorrcomett.server.console.command.CommandManager;
-import net.meteorr.dev.meteorrcomett.server.utils.tools.ExceptionHandler;
+import net.meteorr.dev.meteorrcomett.server.utils.codetools.ExceptionHandler;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
-import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtil;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -65,49 +63,6 @@ public class MeteorrComettServer {
         if (!args.contains("--nocheck")) {
             print(MessageLevel.INFO, "You're running the MeteorrComett $PURPLESERVER");
         }
-    }
-
-    public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupNotInitializedException {
-        getInstance().print(MessageLevel.INFO,"Stopping...");
-        getServerTerminal().stopReader();
-        getInstance().print(MessageLevel.INFO,"Ending $YELLOWCommandExecutor$RESET...");
-        getCommandManager().getCommandExecutor().end();
-        getInstance().print(MessageLevel.INFO,"Ended $GREENCommandExecutor$RESET!");
-        getInstance().print(MessageLevel.INFO,"Intterupting non-importants threads...");
-        List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
-        threads.forEach(thread -> {
-            if (!thread.getClass().isAnnotationPresent(MeteorrComettImportantThread.class)) {
-                if (thread.getClass().isAnnotationPresent(MeteorrComettWaitableThread.class) || thread instanceof WaitableInlineThread) {
-                    long timeout = (thread instanceof WaitableInlineThread ? WaitableInlineThread.class : thread.getClass()).getAnnotation(MeteorrComettWaitableThread.class).timeout();
-                    try {
-                        getInstance().print(MessageLevel.INFO,"Joinin thread $GREEN" + thread.getClass().getName() + "$RESET for " + timeout + " miliseconds...");
-                        long l = 0;
-                        while (l < timeout && thread.isAlive()) {
-                            wait(1);
-                            l++;
-                        }
-                        if (!thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + "$RESET joined and died!");
-                        else {
-                            getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
-                            thread.interrupt();
-                            getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
-                        }
-                    } catch (InterruptedException ignored) {}
-                } else {
-                    getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
-                    thread.interrupt();
-                    getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
-                }
-                if (thread.isAlive()) {
-                    getInstance().print(MessageLevel.CRITICAL,"FORCING THREAD " + thread.getClass().getName() + " TO DIE $RESET!");
-                    thread.stop();
-                    getInstance().print(MessageLevel.WARNING,"Forced thread $YELLOW" + thread.getClass().getName() + " to die $RESET!");
-                }
-            }
-        });
-        getInstance().print(MessageLevel.INFO,"$GREENIntterupted all non important threads!");
-        getServerTerminal().stop();
-        System.out.println("Stopped.");
     }
 
     public void print(MessageLevel level, String... content) {
@@ -179,6 +134,52 @@ public class MeteorrComettServer {
                 }
             });
         });
+    }
+
+    public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException {
+        getInstance().print(MessageLevel.INFO,"Stopping...");
+        getServerTerminal().stopReader();
+        getInstance().print(MessageLevel.INFO,"Ending $YELLOWCommandExecutor$RESET...");
+        getCommandManager().getCommandExecutor().end();
+        getInstance().print(MessageLevel.INFO,"Ended $GREENCommandExecutor$RESET!");
+        getInstance().print(MessageLevel.INFO,"Intterupting non-importants threads...");
+        List<Thread> threads = ThreadsUtils.getGroupThreads(getInstance().getThreadGroup());
+        threads.forEach(thread -> {
+            if (!thread.getClass().isAnnotationPresent(MeteorrComettImportantThread.class)) {
+                if (thread.getClass().isAnnotationPresent(MeteorrComettWaitableThread.class) || thread instanceof WaitableInlineThread) {
+                    long timeout = (thread instanceof WaitableInlineThread ? WaitableInlineThread.class : thread.getClass()).getAnnotation(MeteorrComettWaitableThread.class).timeout();
+                    try {
+                        getInstance().print(MessageLevel.INFO,"Joinin thread $GREEN" + thread.getClass().getName() + "$RESET for " + timeout + " miliseconds...");
+                        long l = 0;
+                        while (l < timeout && thread.isAlive()) {
+                            wait(1);
+                            l++;
+                        }
+                        if (!thread.isAlive()) getInstance().print(MessageLevel.INFO,"Thread $GREEN" + thread.getClass().getName() + "$RESET joined and died!");
+                        else {
+                            getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
+                            thread.interrupt();
+                            getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                        }
+                    } catch (InterruptedException ignored) {}
+                } else {
+                    getInstance().print(MessageLevel.INFO,"Intterupting thread $YELLOW" + thread.getClass().getName() + "$RESET...");
+                    thread.interrupt();
+                    getInstance().print(MessageLevel.INFO,"Intterupted thread $GREEN" + thread.getClass().getName() + "$RESET!");
+                }
+                if (thread.isAlive()) {
+                    getInstance().print(MessageLevel.CRITICAL,"FORCING THREAD " + thread.getClass().getName() + " TO DIE $RESET!");
+                    thread.stop();
+                    getInstance().print(MessageLevel.WARNING,"Forced thread $YELLOW" + thread.getClass().getName() + " to die $RESET!");
+                }
+            }
+        });
+        getInstance().print(MessageLevel.INFO,"$GREENIntterupted all non important threads!");
+        getInstance().print(MessageLevel.INFO,"Ending $YELLOWServerLogger$RESET...");
+        getServerLogger().stop();
+        getInstance().print(MessageLevel.INFO,"Ended $GREENServerLogger$RESET!");
+        getServerTerminal().stop();
+        System.out.println("Stopped.");
     }
 
     public CommandManager getCommandManager() {

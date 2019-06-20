@@ -91,7 +91,7 @@ public class CommandManager {
             }.start();
         }
         if (input.equals("listthread")) {
-            List<Thread> threads = ThreadsUtil.getGroupThreads(getInstance().getThreadGroup());
+            List<Thread> threads = ThreadsUtils.getGroupThreads(getInstance().getThreadGroup());
             final String[] s = {""};
             threads.forEach(thread -> s[0] += "--> " + thread.getName() + " (" + thread.getState() + "): " + thread.getClass().getName() + "\n");
             getInstance().print(MessageLevel.DEBUG, "Il y a actuellement " + threads.size() + " sous-threads: ", s[0]);

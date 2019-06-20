@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.utils.tools;
+package net.meteorr.dev.meteorrcomett.server.utils.codetools;
 
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 
