@@ -1,14 +1,13 @@
 package net.meteorr.dev.meteorrcomett.server.console.command;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
+import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.CommandAlreadyExistException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.CommandAlreadyRegisteredException;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
-import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -69,33 +68,6 @@ public class CommandManager {
             }
         });
         if (!success.get()) getInstance().print(MessageLevel.WARNING, "No command found for : " + label);
-        /**if (input.equals("stop")) getInstance().stop();
-        if (input.equals("logfile")) {
-            getInstance().print(MessageLevel.INFO, "Log file :" + getInstance().getServerLogger().getLogFile().getAbsolutePath());
-        }
-        if (input.equals("testmsg")) {
-
-            new WaitableInlineThread(getInstance().getThreadGroup(),"TestRun") {
-
-                @Override
-                public synchronized void run() {
-                    for (int i = 0; i<10; i++) {
-                        getInstance().print(MessageLevel.INFO, input, "test: $BG_CYAN" + (i + 1));
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(500);
-                        } catch (InterruptedException e) {
-                            getInstance().getExceptionHandler().handle(e);
-                        }
-                    }
-                }
-            }.start();
-        }
-        if (input.equals("listthread")) {
-            List<Thread> threads = ThreadsUtils.getGroupThreads(getInstance().getThreadGroup());
-            final String[] s = {""};
-            threads.forEach(thread -> s[0] += "--> " + thread.getName() + " (" + thread.getState() + "): " + thread.getClass().getName() + "\n");
-            getInstance().print(MessageLevel.DEBUG, "Il y a actuellement " + threads.size() + " sous-threads: ", s[0]);
-        }**/
     }
 
     public MeteorrComettServer getInstance() {
