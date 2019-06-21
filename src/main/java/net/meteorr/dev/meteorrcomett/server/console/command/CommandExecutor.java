@@ -56,7 +56,7 @@ public class CommandExecutor extends Thread {
             try {
                 getCommand().execute(getInstance(), getArgs());
             } catch (Exception e) {
-                getInstance().getExceptionHandler().handle(e);
+                if (getInstance().isChecked()) getInstance().getExceptionHandler().handle(e);
             }
             this.args = null;
             this.command = null;

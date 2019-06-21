@@ -42,6 +42,13 @@ public class TerminalReader extends Thread {
         this.reader = LineReaderBuilder.builder().variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M%P > ").terminal(getTerminal()).build();
         while(isRunning()) {
             try {
+                if (!getInstance().isChecked()) {
+                    String line;
+                    do {
+                        line = getReader().readLine("[yes/no]: ");
+                    } while (!line.equalsIgnoreCase("no") && !line.equalsIgnoreCase("yes"));
+                    getInstance().checkconsume(line.equalsIgnoreCase("yes"));
+                }
                 getInstance().getCommandManager().proceed(getReader().readLine("%M%P > "));
             } catch (Exception e) {
                 try {

@@ -35,6 +35,7 @@ public class MeteorrComettServer {
     private CommandManager commandManager;
     private ThreadGroup threadGroup;
     private ServerLogger serverLogger;
+    private Boolean checked;
 
     public MeteorrComettServer() {
         instance = this;
@@ -43,9 +44,10 @@ public class MeteorrComettServer {
         serverTerminal = null;
         commandManager = null;
         threadGroup = null;
+        checked = false;
     }
 
-    public void start(List<String> args) {
+    public synchronized void start(List<String> args) throws InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException, TerminalNotRunningException {
         this.exceptionHandler = new ExceptionHandler(getInstance());
         this.serverTerminal = new ServerTerminal(getInstance());
         this.threadGroup = null;
@@ -61,8 +63,20 @@ public class MeteorrComettServer {
         initCommands();
         initTerminalReader();
         if (!args.contains("--nocheck")) {
+            checked = false;
             print(MessageLevel.INFO, "You're running the MeteorrComett $PURPLESERVER");
-        }
+            print(MessageLevel.INFO, "Please enter 'yes' below if you agree and want to run it or 'no' otherwise.");
+            wait();
+        } else checked = true;
+        if (!checked) {
+            print(MessageLevel.WARNING, "The input was not 'no', stopping program...");
+            stop();
+        } else print(MessageLevel.INFO, "The input was not 'yes', running program!");
+    }
+
+    public synchronized void checkconsume(boolean result) {
+        this.checked = result;
+        notify();
     }
 
     public void print(MessageLevel level, String... content) {
@@ -209,5 +223,9 @@ public class MeteorrComettServer {
 
     public ServerLogger getServerLogger() {
         return this.serverLogger;
+    }
+
+    public boolean isChecked() {
+        return this.checked;
     }
 }
