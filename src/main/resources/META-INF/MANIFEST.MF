@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: net.meteorr.dev.meteorrcomett.server.MeteorrComettServerBo
- ostrap
+Main-Class: net.meteorr.dev.meteorrcomett.server.messaging.MessagingEn
+ cryptionSetup
 

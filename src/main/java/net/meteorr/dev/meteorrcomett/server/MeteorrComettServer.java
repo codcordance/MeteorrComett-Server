@@ -1,19 +1,20 @@
 package net.meteorr.dev.meteorrcomett.server;
 
-import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
-import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
-import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
-import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
-import net.meteorr.dev.meteorrcomett.server.utils.ReflectionUtils;
-import net.meteorr.dev.meteorrcomett.server.utils.codetools.WaitableInlineThread;
-import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
+import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
+import net.meteorr.dev.meteorrcomett.server.console.command.CommandManager;
+import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.ServerTerminal;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.TerminalReader;
-import net.meteorr.dev.meteorrcomett.server.utils.codetools.ComettRunnable;
-import net.meteorr.dev.meteorrcomett.server.console.command.CommandManager;
-import net.meteorr.dev.meteorrcomett.server.utils.codetools.ExceptionHandler;
+import net.meteorr.dev.meteorrcomett.server.messaging.MessagingEncryptionSetup;
+import net.meteorr.dev.meteorrcomett.server.utils.ReflectionUtils;
+import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
+import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettWaitableThread;
+import net.meteorr.dev.meteorrcomett.server.utils.codetools.ComettRunnable;
+import net.meteorr.dev.meteorrcomett.server.utils.codetools.ExceptionHandler;
+import net.meteorr.dev.meteorrcomett.server.utils.codetools.WaitableInlineThread;
+import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -72,6 +73,7 @@ public class MeteorrComettServer {
             print(MessageLevel.WARNING, "The input was not 'no', stopping program...");
             stop();
         } else print(MessageLevel.INFO, "The input was not 'yes', running program!");
+        MessagingEncryptionSetup.main(new String[0]);
     }
 
     public synchronized void checkconsume(boolean result) {
