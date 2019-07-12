@@ -64,6 +64,7 @@ public class CommandManager {
         getCommands().forEach(command -> {
             if (command.getLabel().equalsIgnoreCase(label)) {
                 getCommandExecutor().execute(command, args);
+                //System.out.println("here we go");
                 success.set(true);
             }
         });

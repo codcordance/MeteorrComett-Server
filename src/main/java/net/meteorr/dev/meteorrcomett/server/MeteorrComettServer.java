@@ -7,6 +7,7 @@ import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.ServerTerminal;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.TerminalReader;
 import net.meteorr.dev.meteorrcomett.server.messaging.MessagingEncryptionSetup;
+import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingLoggerHandler;
 import net.meteorr.dev.meteorrcomett.server.utils.ReflectionUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
@@ -18,6 +19,7 @@ import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Classe principale du serveur MeteorrComett
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class MeteorrComettServer {
 
     private final MeteorrComettServer instance;
@@ -36,6 +39,7 @@ public class MeteorrComettServer {
     private CommandManager commandManager;
     private ThreadGroup threadGroup;
     private ServerLogger serverLogger;
+    private MessagingLoggerHandler messagingLoggerImplementation;
     private Boolean checked;
 
     public MeteorrComettServer() {
@@ -46,17 +50,20 @@ public class MeteorrComettServer {
         commandManager = null;
         threadGroup = null;
         checked = false;
+        messagingLoggerImplementation = null;
     }
 
-    public synchronized void start(List<String> args) throws InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException, TerminalNotRunningException {
+    synchronized void start(List<String> args) throws InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException, TerminalNotRunningException {
         this.exceptionHandler = new ExceptionHandler(getInstance());
         this.serverTerminal = new ServerTerminal(getInstance());
         this.threadGroup = null;
+
         try {
             getServerTerminal().init();
         } catch (Exception e) {
             this.getExceptionHandler().handle(e);
         }
+
         initThreadGroup();
         initServerLogger();
         initCommandManager();
@@ -69,45 +76,18 @@ public class MeteorrComettServer {
             print(MessageLevel.INFO, "Please enter 'yes' below if you agree and want to run it or 'no' otherwise.");
             wait();
         } else checked = true;
+
         if (!checked) {
             print(MessageLevel.WARNING, "The input was not 'no', stopping program...");
             stop();
         } else print(MessageLevel.INFO, "The input was not 'yes', running program!");
-        MessagingEncryptionSetup.main(new String[0]);
+        initMessagingLoggerImplementation();
+        MessagingEncryptionSetup.main(getMessagingLoggerImplementation());
     }
 
     public synchronized void checkconsume(boolean result) {
         this.checked = result;
         notify();
-    }
-
-    public void print(MessageLevel level, String... content) {
-        try {
-            getServerTerminal().print(level, content);
-        } catch (Exception e) {
-            this.getExceptionHandler().handle(e);
-        }
-    }
-
-    private void initComponent(String componentName, ComettRunnable lambdainit) {
-        getInstance().print(MessageLevel.INFO,"Initializing " + componentName + "...");
-        try {
-            lambdainit.run(getInstance());
-        } catch (Exception e) {
-            try {
-                getInstance().print(MessageLevel.INFO,componentName + " initialization $REDfailed$RESET!");
-                throw new ComponentFailedToInitializeException(e);
-            } catch (ComponentFailedToInitializeException ex) {
-                ex.printStackTrace();
-            }
-        }
-        try {
-            TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-            getExceptionHandler().handle(e);
-        }
-        getInstance().print(MessageLevel.INFO,componentName + " initialization $GREENsucceed$RESET!");
-
     }
 
     private void initCommandManager() {
@@ -126,6 +106,10 @@ public class MeteorrComettServer {
         initComponent("ThreadGroup", () -> this.threadGroup = new ThreadGroup("MeteorrComettServer"));
     }
 
+    private void initMessagingLoggerImplementation() {
+        initComponent("MessagingLoggerImplementation", () -> this.messagingLoggerImplementation = new MessagingLoggerImplementation(getInstance()));
+    }
+
     private void initTerminalReader() {
         initComponent("TerminalReader", () -> {
             getInstance().print(MessageLevel.INFO, "Setting terminal reader...");
@@ -136,25 +120,54 @@ public class MeteorrComettServer {
         });
     }
 
+    @SuppressWarnings("unchecked")
     private void initCommands() {
-        initComponent("Commands", () -> {
-            Arrays.asList(ReflectionUtils.getClasses("net.meteorr.dev.meteorrcomett.server.commands")).forEach(aClass -> {
+        initComponent("Commands", () -> Arrays.asList(ReflectionUtils.getClasses("net.meteorr.dev.meteorrcomett.server.commands")).forEach(aClass -> {
+            try {
+                getCommandManager().registerCommand((ComettServerCommand) aClass.getConstructor().newInstance());
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 try {
-                    getCommandManager().registerCommand((ComettServerCommand) aClass.getConstructor().newInstance());
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    try {
-                        throw new FailedToReflectCommandException(e);
-                    } catch (FailedToReflectCommandException ex) {
-                        getExceptionHandler().handle(e);
-                    }
+                    throw new FailedToReflectCommandException(e);
+                } catch (FailedToReflectCommandException ex) {
+                    getExceptionHandler().handle(e);
                 }
-            });
-        });
+            }
+        }));
     }
 
+    private void initComponent(String componentName, ComettRunnable lambdainit) {
+        getInstance().print(MessageLevel.INFO, "Initializing " + componentName + "...");
+        try {
+            lambdainit.run(getInstance());
+        } catch (Exception e) {
+            try {
+                getInstance().print(MessageLevel.INFO, componentName + " initialization $REDfailed$RESET!");
+                throw new ComponentFailedToInitializeException(e);
+            } catch (ComponentFailedToInitializeException ex) {
+                getExceptionHandler().handle(ex);
+            }
+        }
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            getExceptionHandler().handle(e);
+        }
+        getInstance().print(MessageLevel.INFO, componentName + " initialization $GREENsucceed$RESET!");
+
+    }
+
+    @SuppressWarnings("deprecation")
     public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException {
         getInstance().print(MessageLevel.INFO,"Stopping...");
         getServerTerminal().stopReader();
+        Thread t = MessagingEncryptionSetup.t;
+        try {
+            Method d = t.getClass().getDeclaredMethod("customstop");
+            d.setAccessible(true);
+            d.invoke(t);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
         getInstance().print(MessageLevel.INFO,"Ending $YELLOWCommandExecutor$RESET...");
         getCommandManager().getCommandExecutor().end();
         getInstance().print(MessageLevel.INFO,"Ended $GREENCommandExecutor$RESET!");
@@ -198,6 +211,14 @@ public class MeteorrComettServer {
         System.out.println("Stopped.");
     }
 
+    public void print(MessageLevel level, String... content) {
+        try {
+            getServerTerminal().print(level, content);
+        } catch (Exception e) {
+            this.getExceptionHandler().handle(e);
+        }
+    }
+
     public CommandManager getCommandManager() {
         return this.commandManager;
     }
@@ -229,5 +250,9 @@ public class MeteorrComettServer {
 
     public boolean isChecked() {
         return this.checked;
+    }
+
+    public MessagingLoggerHandler getMessagingLoggerImplementation() {
+        return this.messagingLoggerImplementation;
     }
 }
