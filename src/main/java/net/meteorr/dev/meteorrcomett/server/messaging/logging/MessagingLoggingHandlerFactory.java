@@ -17,6 +17,5 @@ public class MessagingLoggingHandlerFactory {
     private static void buildLoggingHandler(MessagingLoggerHandler handler) {
         new MessagingLoggerWrapper(handler);
         loggingHandler = new LoggingHandler(MessagingLoggerWrapper.NAME, LogLevel.INFO);
-        //loggingHandler.logger =
     }
 }

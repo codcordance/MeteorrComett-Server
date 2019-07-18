@@ -7,6 +7,7 @@ import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.ServerTerminal;
 import net.meteorr.dev.meteorrcomett.server.console.terminal.TerminalReader;
 import net.meteorr.dev.meteorrcomett.server.messaging.MessagingEncryptionSetup;
+import net.meteorr.dev.meteorrcomett.server.messaging.MessagingServerBootstrap;
 import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingLoggerHandler;
 import net.meteorr.dev.meteorrcomett.server.utils.ReflectionUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
@@ -82,7 +83,8 @@ public class MeteorrComettServer {
             stop();
         } else print(MessageLevel.INFO, "The input was not 'yes', running program!");
         initMessagingLoggerImplementation();
-        MessagingEncryptionSetup.main(getMessagingLoggerImplementation());
+        new MessagingServerBootstrap(getMessagingLoggerImplementation()).start();
+        //MessagingEncryptionSetup.main(getMessagingLoggerImplementation());
     }
 
     public synchronized void checkconsume(boolean result) {
