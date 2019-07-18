@@ -5,10 +5,10 @@ import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 /**
  * @author RedLux
  */
-public abstract class ComettServerCommand {
+public abstract class MeteorrComettServerCommand {
     private final String label;
 
-    public ComettServerCommand(String label) {
+    public MeteorrComettServerCommand(String label) {
         this.label = label;
     }
 

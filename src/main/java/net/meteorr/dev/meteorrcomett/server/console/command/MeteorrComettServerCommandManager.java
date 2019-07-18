@@ -14,25 +14,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author RedLux
  */
-public class CommandManager {
+public class MeteorrComettServerCommandManager {
     private final MeteorrComettServer instance;
-    private List<ComettServerCommand> commands;
-    private CommandExecutor commandExecutor;
+    private List<MeteorrComettServerCommand> commands;
+    private MeteorrComettServerCommandExecutor commandExecutor;
 
-    public CommandManager(MeteorrComettServer instance) {
+    public MeteorrComettServerCommandManager(MeteorrComettServer instance) {
         this.instance = instance;
         this.commands = new ArrayList<>();
         this.commandExecutor = null;
     }
 
     public void initExecutor() throws ThreadGroupNotInitializedException {
-        this.commandExecutor = new CommandExecutor(getInstance());
+        this.commandExecutor = new MeteorrComettServerCommandExecutor(getInstance());
         getInstance().print(MessageLevel.INFO,"Starting executor...");
         this.commandExecutor.start();
         getInstance().print(MessageLevel.INFO,"$GREENExecutor successfully started!");
     }
 
-    public void registerCommand(ComettServerCommand command) {
+    public void registerCommand(MeteorrComettServerCommand command) {
         getInstance().print(MessageLevel.INFO,"Registering command " + command.getLabel() + " with class " + command.getClass() + "...");
         getCommands().forEach(cmd -> {
             if (cmd.getLabel().equals(command.getLabel())) try {
@@ -57,7 +57,7 @@ public class CommandManager {
 
     public synchronized void proceed(String input) throws ThreadGroupNotInitializedException, IOException {
         if (input.equals("")) return;
-        getInstance().getServerLogger().write(MessageLevel.DEBUG, "Command input: " + input);
+        getInstance().getMeteorrComettServerLogger().write(MessageLevel.DEBUG, "Command input: " + input);
         String label = input.contains(" ") ? input.split(" ")[0] : input;
         String[] args = input.contains(" ") ? input.split(label + " ")[1].split(" ") : new String[0];
         AtomicBoolean success = new AtomicBoolean(false);
@@ -75,11 +75,11 @@ public class CommandManager {
         return this.instance;
     }
 
-    public List<ComettServerCommand> getCommands() {
+    public List<MeteorrComettServerCommand> getCommands() {
         return commands;
     }
 
-    public CommandExecutor getCommandExecutor() {
+    public MeteorrComettServerCommandExecutor getCommandExecutor() {
         return commandExecutor;
     }
 }

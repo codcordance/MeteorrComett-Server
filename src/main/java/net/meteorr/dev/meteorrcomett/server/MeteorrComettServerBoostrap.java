@@ -10,7 +10,7 @@ import java.util.Arrays;
 public final class MeteorrComettServerBoostrap {
 
     public static void main(String[] args) throws Exception {
-        new RuntimeSystemSetup().setup();
+        new MeteorrComettServerRuntimeSystemSetup().setup();
         new MeteorrComettServer().start(Arrays.asList(args));
     }
 }

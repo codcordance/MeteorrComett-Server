@@ -8,13 +8,13 @@ import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitia
  * @author RedLux
  */
 @MeteorrComettImportantThread(name="MeteorrComettServerCommandExecutor")
-public class CommandExecutor extends Thread {
+public class MeteorrComettServerCommandExecutor extends Thread {
     private final MeteorrComettServer instance;
-    private ComettServerCommand command;
+    private MeteorrComettServerCommand command;
     private String[] args;
     private boolean running;
 
-    public CommandExecutor(MeteorrComettServer instance) throws ThreadGroupNotInitializedException {
+    public MeteorrComettServerCommandExecutor(MeteorrComettServer instance) throws ThreadGroupNotInitializedException {
         super(instance.getThreadGroup(), "MeteorrComettServerCommandExecutor");
         this.instance = instance;
         this.command = null;
@@ -28,7 +28,7 @@ public class CommandExecutor extends Thread {
         this.running = true;
     }
 
-    public synchronized ComettServerCommand getCommand() {
+    public synchronized MeteorrComettServerCommand getCommand() {
         return command;
     }
 
@@ -56,7 +56,8 @@ public class CommandExecutor extends Thread {
             try {
                 getCommand().execute(getInstance(), getArgs());
             } catch (Exception e) {
-                if (getInstance().isChecked()) getInstance().getExceptionHandler().handle(e);
+                if (getInstance().isChecked() && getInstance().isRunning())
+                    getInstance().getExceptionHandler().handle(e);
             }
             this.args = null;
             this.command = null;
@@ -74,7 +75,7 @@ public class CommandExecutor extends Thread {
     }
 
 
-    public synchronized void execute(ComettServerCommand command, String[] args) {
+    public synchronized void execute(MeteorrComettServerCommand command, String[] args) {
         this.command = command;
         this.args = args;
         this.notify();

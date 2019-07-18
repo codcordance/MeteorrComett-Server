@@ -7,9 +7,9 @@ import java.io.PrintStream;
 /**
  * @author RedLux
  */
-public class RuntimeSystemSetup {
+public class MeteorrComettServerRuntimeSystemSetup {
 
-    RuntimeSystemSetup() {
+    MeteorrComettServerRuntimeSystemSetup() {
     }
 
     public void setup() {

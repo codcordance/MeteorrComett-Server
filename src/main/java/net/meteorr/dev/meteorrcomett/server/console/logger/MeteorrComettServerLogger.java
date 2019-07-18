@@ -14,13 +14,13 @@ import java.io.IOException;
 /**
  * @author RedLux
  */
-public class ServerLogger {
+public class MeteorrComettServerLogger {
     private final MeteorrComettServer instance;
     private final File logFile;
     private String startDate;
     private boolean running;
 
-    public ServerLogger(MeteorrComettServer instance) throws ServerLoggerInitException {
+    public MeteorrComettServerLogger(MeteorrComettServer instance) throws ServerLoggerInitException {
         this.running = false;
         File logFile;
         this.instance = instance;
@@ -64,7 +64,7 @@ public class ServerLogger {
 
     public void write(MessageLevel level, String... content) throws IOException, ThreadGroupNotInitializedException {
         if (!this.isRunning()) return;
-        new LoggerWritter(getInstance(), getLogFile()).log(level, content).start();
+        new MeteorrComettServerLoggerWritter(getInstance(), getLogFile()).log(level, content).start();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

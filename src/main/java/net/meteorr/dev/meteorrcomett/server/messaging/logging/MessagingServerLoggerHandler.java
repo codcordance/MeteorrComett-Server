@@ -7,7 +7,7 @@ import java.util.logging.LogRecord;
 /**
  * @author RedLux
  */
-public abstract class MessagingLoggerHandler extends Handler {
+public abstract class MessagingServerLoggerHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
         String message = "(Messaging) " + record.getMessage();

@@ -11,8 +11,8 @@ import io.netty.handler.codec.compression.ZlibCodecFactory;
 import io.netty.handler.codec.compression.ZlibWrapper;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingLoggerHandler;
-import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingLoggingHandlerFactory;
+import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingServerLoggerHandler;
+import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingServerLoggingHandlerFactory;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
@@ -21,7 +21,7 @@ import java.util.Objects;
 public class MessagingEncryptionSetup {
     public static Thread t;
 
-    public static void main(MessagingLoggerHandler handler) {
+    public static void main(MessagingServerLoggerHandler handler) {
         t = new Thread() {
 
             EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -47,7 +47,7 @@ public class MessagingEncryptionSetup {
                 ServerBootstrap b = new ServerBootstrap();
                 b.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
-                        .handler(MessagingLoggingHandlerFactory.getLoggingHandler(handler))
+                        .handler(MessagingServerLoggingHandlerFactory.getLoggingHandler(handler))
                         .childHandler(new FactorialServerInitializer(context));
                 try {
                     b.bind(1192).sync().channel().closeFuture().sync();

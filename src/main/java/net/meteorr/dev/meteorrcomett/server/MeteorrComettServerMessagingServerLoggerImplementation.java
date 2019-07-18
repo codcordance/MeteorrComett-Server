@@ -1,12 +1,12 @@
 package net.meteorr.dev.meteorrcomett.server;
 
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
-import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingLoggerHandler;
+import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingServerLoggerHandler;
 
-public class MessagingLoggerImplementation extends MessagingLoggerHandler {
+public class MeteorrComettServerMessagingServerLoggerImplementation extends MessagingServerLoggerHandler {
     private MeteorrComettServer instance;
 
-    public MessagingLoggerImplementation(MeteorrComettServer instance) {
+    public MeteorrComettServerMessagingServerLoggerImplementation(MeteorrComettServer instance) {
         this.instance = instance;
     }
 

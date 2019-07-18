@@ -2,14 +2,14 @@ package net.meteorr.dev.meteorrcomett.server.commands;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
-import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
+import net.meteorr.dev.meteorrcomett.server.console.command.MeteorrComettServerCommand;
 
 import java.util.Arrays;
 
 /**
  * @author RedLux
  */
-public class EchoCommand extends ComettServerCommand {
+public class EchoCommand extends MeteorrComettServerCommand {
     public EchoCommand() {
         super("echo");
     }

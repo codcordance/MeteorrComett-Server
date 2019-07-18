@@ -2,7 +2,7 @@ package net.meteorr.dev.meteorrcomett.server.commands;
 
 import net.meteorr.dev.meteorrcomett.server.MeteorrComettServer;
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
-import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
+import net.meteorr.dev.meteorrcomett.server.console.command.MeteorrComettServerCommand;
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.exception.ThreadGroupNotInitializedException;
 
@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author RedLux
  */
-public class ListThreadCommand extends ComettServerCommand {
+public class ListThreadCommand extends MeteorrComettServerCommand {
     public ListThreadCommand() {
         super("listthread");
     }

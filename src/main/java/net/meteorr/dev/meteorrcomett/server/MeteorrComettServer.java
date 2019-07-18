@@ -1,14 +1,13 @@
 package net.meteorr.dev.meteorrcomett.server;
 
 import net.meteorr.dev.meteorrcomett.server.console.MessageLevel;
-import net.meteorr.dev.meteorrcomett.server.console.command.ComettServerCommand;
-import net.meteorr.dev.meteorrcomett.server.console.command.CommandManager;
-import net.meteorr.dev.meteorrcomett.server.console.logger.ServerLogger;
-import net.meteorr.dev.meteorrcomett.server.console.terminal.ServerTerminal;
-import net.meteorr.dev.meteorrcomett.server.console.terminal.TerminalReader;
-import net.meteorr.dev.meteorrcomett.server.messaging.MessagingEncryptionSetup;
+import net.meteorr.dev.meteorrcomett.server.console.command.MeteorrComettServerCommand;
+import net.meteorr.dev.meteorrcomett.server.console.command.MeteorrComettServerCommandManager;
+import net.meteorr.dev.meteorrcomett.server.console.logger.MeteorrComettServerLogger;
+import net.meteorr.dev.meteorrcomett.server.console.terminal.MeteorrComettServerTerminal;
+import net.meteorr.dev.meteorrcomett.server.console.terminal.MeteorrComettServerTerminalReader;
 import net.meteorr.dev.meteorrcomett.server.messaging.MessagingServerBootstrap;
-import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingLoggerHandler;
+import net.meteorr.dev.meteorrcomett.server.messaging.logging.MessagingServerLoggerHandler;
 import net.meteorr.dev.meteorrcomett.server.utils.ReflectionUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.ThreadsUtils;
 import net.meteorr.dev.meteorrcomett.server.utils.annotations.MeteorrComettImportantThread;
@@ -20,7 +19,6 @@ import net.meteorr.dev.meteorrcomett.server.utils.exception.*;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,11 +34,11 @@ public class MeteorrComettServer {
     private final MeteorrComettServer instance;
     private Boolean running;
     private ExceptionHandler exceptionHandler;
-    private ServerTerminal serverTerminal;
-    private CommandManager commandManager;
+    private MeteorrComettServerTerminal serverTerminal;
+    private MeteorrComettServerCommandManager commandManager;
     private ThreadGroup threadGroup;
-    private ServerLogger serverLogger;
-    private MessagingLoggerHandler messagingLoggerImplementation;
+    private MeteorrComettServerLogger serverLogger;
+    private MessagingServerLoggerHandler messagingLoggerImplementation;
     private Boolean checked;
 
     public MeteorrComettServer() {
@@ -56,7 +54,7 @@ public class MeteorrComettServer {
 
     synchronized void start(List<String> args) throws InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException, TerminalNotRunningException {
         this.exceptionHandler = new ExceptionHandler(getInstance());
-        this.serverTerminal = new ServerTerminal(getInstance());
+        this.serverTerminal = new MeteorrComettServerTerminal(getInstance());
         this.threadGroup = null;
 
         try {
@@ -83,7 +81,26 @@ public class MeteorrComettServer {
             stop();
         } else print(MessageLevel.INFO, "The input was not 'yes', running program!");
         initMessagingLoggerImplementation();
-        new MessagingServerBootstrap(getMessagingLoggerImplementation()).start();
+        print(MessageLevel.INFO, "Initializing the MessagingServer...");
+        MessagingServerBootstrap messagingServerBootstrap = new MessagingServerBootstrap(getMessagingLoggerImplementation());
+        try {
+            messagingServerBootstrap.init();
+        } catch (Exception e) {
+            getExceptionHandler().handle(e);
+            print(MessageLevel.CRITICAL, "Error during MessaingServer initialization, stopping...");
+            stop();
+        }
+        getInstance().print(MessageLevel.INFO, "MessagingServer initialization $GREENsucceed$RESET!");
+        print(MessageLevel.INFO, "Sarting the MessagingServer...");
+        try {
+            messagingServerBootstrap.start();
+        } catch (Exception e) {
+            getExceptionHandler().handle(e);
+            print(MessageLevel.CRITICAL, "Error during MessaingServer start, stopping...");
+            stop();
+        }
+        getInstance().print(MessageLevel.INFO, "MessagingServer started $GREENsuccessfully$RESET!");
+        running = true;
         //MessagingEncryptionSetup.main(getMessagingLoggerImplementation());
     }
 
@@ -93,29 +110,29 @@ public class MeteorrComettServer {
     }
 
     private void initCommandManager() {
-        initComponent("CommandManager", () -> this.commandManager = new CommandManager(getInstance()));
+        initComponent("MeteorrComettServerCommandManager", () -> this.commandManager = new MeteorrComettServerCommandManager(getInstance()));
     }
 
     private void initCommandExecutor() {
-        initComponent("CommandExecutor", () -> this.getCommandManager().initExecutor());
+        initComponent("MeteorrComettServerCommandExecutor", () -> this.getCommandManager().initExecutor());
     }
 
     private void initServerLogger() {
-        initComponent("ServerLogger", () -> this.serverLogger = new ServerLogger(getInstance()));
+        initComponent("MeteorrComettServerLogger", () -> this.serverLogger = new MeteorrComettServerLogger(getInstance()));
     }
 
     private void initThreadGroup() {
-        initComponent("ThreadGroup", () -> this.threadGroup = new ThreadGroup("MeteorrComettServer"));
+        initComponent("MeteorrComettServerThreadGroup", () -> this.threadGroup = new ThreadGroup("MeteorrComettServer"));
     }
 
     private void initMessagingLoggerImplementation() {
-        initComponent("MessagingLoggerImplementation", () -> this.messagingLoggerImplementation = new MessagingLoggerImplementation(getInstance()));
+        initComponent("MeteorrComettServerMessagingServerLoggerImplementation", () -> this.messagingLoggerImplementation = new MeteorrComettServerMessagingServerLoggerImplementation(getInstance()));
     }
 
     private void initTerminalReader() {
-        initComponent("TerminalReader", () -> {
+        initComponent("MeteorrComettServerTerminalReader", () -> {
             getInstance().print(MessageLevel.INFO, "Setting terminal reader...");
-            getServerTerminal().setTerminalReader(new TerminalReader(getInstance(), getServerTerminal().getTerminal()));
+            getServerTerminal().setMeteorrComettServerTerminalReader(new MeteorrComettServerTerminalReader(getInstance(), getServerTerminal().getTerminal()));
             getInstance().print(MessageLevel.INFO, "Initializing terminal reader...");
             TimeUnit.SECONDS.sleep(2);
             getServerTerminal().initReader();
@@ -124,9 +141,9 @@ public class MeteorrComettServer {
 
     @SuppressWarnings("unchecked")
     private void initCommands() {
-        initComponent("Commands", () -> Arrays.asList(ReflectionUtils.getClasses("net.meteorr.dev.meteorrcomett.server.commands")).forEach(aClass -> {
+        initComponent("MeteorrComettServerCommands", () -> Arrays.asList(ReflectionUtils.getClasses("net.meteorr.dev.meteorrcomett.server.commands")).forEach(aClass -> {
             try {
-                getCommandManager().registerCommand((ComettServerCommand) aClass.getConstructor().newInstance());
+                getCommandManager().registerCommand((MeteorrComettServerCommand) aClass.getConstructor().newInstance());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 try {
                     throw new FailedToReflectCommandException(e);
@@ -160,16 +177,17 @@ public class MeteorrComettServer {
 
     @SuppressWarnings("deprecation")
     public synchronized void stop() throws TerminalNotRunningException, InterruptedException, ThreadGroupNotInitializedException, IOException, GzipIOException {
+        running = false;
         getInstance().print(MessageLevel.INFO,"Stopping...");
         getServerTerminal().stopReader();
-        Thread t = MessagingEncryptionSetup.t;
+        /*Thread t = MessagingEncryptionSetup.t;
         try {
             Method d = t.getClass().getDeclaredMethod("customstop");
             d.setAccessible(true);
             d.invoke(t);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
-        }
+        }*/
         getInstance().print(MessageLevel.INFO,"Ending $YELLOWCommandExecutor$RESET...");
         getCommandManager().getCommandExecutor().end();
         getInstance().print(MessageLevel.INFO,"Ended $GREENCommandExecutor$RESET!");
@@ -207,7 +225,7 @@ public class MeteorrComettServer {
         });
         getInstance().print(MessageLevel.INFO,"$GREENIntterupted all non important threads!");
         getInstance().print(MessageLevel.INFO,"Ending $YELLOWServerLogger$RESET...");
-        getServerLogger().stop();
+        getMeteorrComettServerLogger().stop();
         getInstance().print(MessageLevel.INFO,"Ended $GREENServerLogger$RESET!");
         getServerTerminal().stop();
         System.out.println("Stopped.");
@@ -221,7 +239,7 @@ public class MeteorrComettServer {
         }
     }
 
-    public CommandManager getCommandManager() {
+    public MeteorrComettServerCommandManager getCommandManager() {
         return this.commandManager;
     }
 
@@ -229,7 +247,7 @@ public class MeteorrComettServer {
         return this.instance;
     }
 
-    public ServerTerminal getServerTerminal() {
+    public MeteorrComettServerTerminal getServerTerminal() {
         return this.serverTerminal;
     }
 
@@ -246,7 +264,7 @@ public class MeteorrComettServer {
         return this.threadGroup;
     }
 
-    public ServerLogger getServerLogger() {
+    public MeteorrComettServerLogger getMeteorrComettServerLogger() {
         return this.serverLogger;
     }
 
@@ -254,7 +272,7 @@ public class MeteorrComettServer {
         return this.checked;
     }
 
-    public MessagingLoggerHandler getMessagingLoggerImplementation() {
+    public MessagingServerLoggerHandler getMessagingLoggerImplementation() {
         return this.messagingLoggerImplementation;
     }
 }
