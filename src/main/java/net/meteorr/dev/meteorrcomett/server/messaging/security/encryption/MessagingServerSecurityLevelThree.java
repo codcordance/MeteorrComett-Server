@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.messaging.security;
+package net.meteorr.dev.meteorrcomett.server.messaging.security.encryption;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;

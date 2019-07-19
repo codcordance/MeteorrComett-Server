@@ -1,4 +1,4 @@
-package net.meteorr.dev.meteorrcomett.server.messaging.security;
+package net.meteorr.dev.meteorrcomett.server.messaging.security.encryption;
 
 import java.util.Base64;
 import java.util.regex.Matcher;
