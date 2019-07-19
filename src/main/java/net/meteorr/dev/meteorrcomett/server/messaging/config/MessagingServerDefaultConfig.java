@@ -5,6 +5,6 @@ package net.meteorr.dev.meteorrcomett.server.messaging.config;
  */
 public class MessagingServerDefaultConfig extends MessagingServerConfig {
     public MessagingServerDefaultConfig() {
-        super("0.0.0.0", 570, false, "code", "cert.pem", "key.pem", "pass");
+        super("0.0.0.0", 570, false, "code", "secondcode", "cert.pem", "key.pem", "pass");
     }
 }

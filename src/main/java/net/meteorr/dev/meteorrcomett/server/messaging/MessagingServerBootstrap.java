@@ -28,6 +28,7 @@ public class MessagingServerBootstrap {
         messagingServerLoggerHandler.logDebug("[Config info] Port: " + config.getPort());
         messagingServerLoggerHandler.logDebug("[Config info] Ssl: " + config.isSsl());
         messagingServerLoggerHandler.logDebug("[Config info] Code: " + config.getCode());
+        messagingServerLoggerHandler.logDebug("[Config info] Second Code: " + config.getSecondcode());
         messagingServerLoggerHandler.logDebug("[Config info] Certfile: " + config.getCertfile());
         messagingServerLoggerHandler.logDebug("[Config info] Keyfile: " + config.getKeyfile());
         messagingServerLoggerHandler.logDebug("[Config info] Passfile: " + config.getPassfile());

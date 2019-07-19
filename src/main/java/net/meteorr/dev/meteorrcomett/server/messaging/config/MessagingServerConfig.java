@@ -8,15 +8,17 @@ public class MessagingServerConfig {
     private Integer port;
     private boolean ssl;
     private String code;
+    private String secondcode;
     private String certfile;
     private String keyfile;
     private String passfile;
 
-    MessagingServerConfig(String hostname, Integer port, boolean ssl, String code, String certfile, String keyfile, String passfile) {
+    MessagingServerConfig(String hostname, Integer port, boolean ssl, String code, String secondcode, String certfile, String keyfile, String passfile) {
         this.hostname = hostname;
         this.port = port;
         this.ssl = ssl;
         this.code = code;
+        this.secondcode = secondcode;
         this.certfile = certfile;
         this.keyfile = keyfile;
         this.passfile = passfile;
@@ -52,6 +54,14 @@ public class MessagingServerConfig {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getSecondcode() {
+        return secondcode;
+    }
+
+    public void setSecondcode(String secondcode) {
+        this.secondcode = secondcode;
     }
 
     public String getCertfile() {
